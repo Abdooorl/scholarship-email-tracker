@@ -64,6 +64,24 @@ const cases = [
     },
     expect: { status: 'rejected', topic: 'scholarship' },
   },
+  {
+    name: 'Quora digest with decision-like words is NOT accepted',
+    email: {
+      subject: 'SWITZERLAND: A Muslim woman was fined for wearing a burqa, which...',
+      from: 'Quora Digest <english-quora-digest@quora.com>',
+      body: `Today's digest: congratulations to the winner! ... she was accepted into the university ... scholarship debate ...`,
+    },
+    expect: { status: 'other', topic: 'other' },
+  },
+  {
+    name: 'GitHub notification about this repo stays neutral',
+    email: {
+      subject: '[Abdooorl/scholarship-email-tracker] Run failed: Sync scholarship emails',
+      from: 'GitHub Notifications <notifications@github.com>',
+      body: `The workflow run failed. View logs on GitHub Actions.`,
+    },
+    expect: { status: 'other', topic: 'other' },
+  },
 ];
 
 let failed = 0;

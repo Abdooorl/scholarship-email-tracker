@@ -8,6 +8,16 @@
 // Tune the word lists below as you like — they are plain substring matches,
 // case-insensitive, applied to subject + from + body (subject weighted 2x).
 
+// Senders that are aggregators/notifications, never scholarship decision
+// letters. Anything from these domains is filed as topic "other" regardless
+// of wording found inside their digests.
+const SENDER_BLOCKLIST = [
+  'quora.com', 'github.com', 'linkedin.com', 'facebookmail.com', 'facebook.com',
+  'x.com', 'twitter.com', 'medium.com', 'reddit.com', 'redditmail.com',
+  'substack.com', 'googlealerts-noreply@google.com', 'youtube.com',
+  'tiktok.com', 'pinterest.com', 'glassdoor.com',
+];
+
 const SCHOLARSHIP_TERMS = [
   'scholarship', 'scholarships', 'bursary', 'bursaries',
   'fellowship', 'fellowships', 'studentship',
@@ -115,6 +125,14 @@ function score(haystack, terms) {
  * @returns {{status: 'accepted'|'rejected'|'other', topic: 'scholarship'|'job'|'other', matched: string[]}}
  */
 export function classifyEmail({ subject = '', from = '', body = '' } = {}) {
+  const fromLower = from.toLowerCase();
+
+  // Aggregators/notifications (Quora digests, GitHub alerts, social networks)
+  // embed decision-like words in unrelated content — never classify them.
+  if (SENDER_BLOCKLIST.some((d) => fromLower.includes(d))) {
+    return { status: 'other', topic: 'other', matched: [] };
+  }
+
   const haystack = [
     subject.toLowerCase(),
     subject.toLowerCase(), // subject counted twice = 2x weight
