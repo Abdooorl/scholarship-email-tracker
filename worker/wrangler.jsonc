@@ -1,0 +1,32 @@
+// Cloudflare Worker configuration.
+//
+// Before first deploy:
+//   1. npx wrangler login
+//   2. npx wrangler d1 create scholar-tracker
+//   3. Paste the printed database_id below (replace REPLACE_ME)
+//   4. npx wrangler d1 migrations apply scholar-tracker --remote
+//   5. npm run build -w frontend   (assets dir must exist)
+//   6. npx wrangler secret put INGEST_SECRET
+//   7. npx wrangler deploy
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "scholarship-email-tracker",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-08-01",
+  "assets": {
+    "directory": "../frontend/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "scholar-tracker",
+      "database_id": "97fdae3c-520b-4dcc-9e7f-d84603aa0b49",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

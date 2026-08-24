@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env
+INGEST_SECRET.txt
+*.log
+.DS_Store

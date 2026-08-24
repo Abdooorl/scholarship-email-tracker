@@ -1,0 +1,22 @@
+{
+  "name": "scholarship-email-tracker",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "worker",
+    "frontend"
+  ],
+  "scripts": {
+    "auth:gmail": "node scripts/gmail-auth.mjs",
+    "sync:test": "node action/sync.mjs",
+    "test:classify": "node action/classify.test.mjs",
+    "dev:worker": "npm run dev -w worker",
+    "dev:web": "npm run dev -w frontend",
+    "check:worker": "npm run check -w worker",
+    "build:web": "npm run build -w frontend",
+    "deploy": "npm run build -w frontend && npm run deploy -w worker"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
