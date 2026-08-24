@@ -188,7 +188,12 @@ async function main() {
   for (const id of ids) {
     const msg = await api(token, `/messages/${id}?format=full`);
     const parsed = parseMessage(msg);
-    const { status, topic, matched } = classifyEmail(parsed);
+    // Give the classifier the full From value (name + address) so
+    // domain-based rules (e.g. quora.com) can match.
+    const { status, topic, matched } = classifyEmail({
+      ...parsed,
+      from: `${parsed.sender} <${parsed.senderEmail}>`,
+    });
 
     // Scholarship-gated tracking: job applications are never stored.
     if (topic === 'job') {

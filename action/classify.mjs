@@ -16,6 +16,7 @@ const SENDER_BLOCKLIST = [
   'x.com', 'twitter.com', 'medium.com', 'reddit.com', 'redditmail.com',
   'substack.com', 'googlealerts-noreply@google.com', 'youtube.com',
   'tiktok.com', 'pinterest.com', 'glassdoor.com',
+  'udemy.com', 'coursera.org', 'edx.org', 'udacity.com', 'alison.com',
 ];
 
 const SCHOLARSHIP_TERMS = [

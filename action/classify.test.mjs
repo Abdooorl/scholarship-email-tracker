@@ -82,6 +82,15 @@ const cases = [
     },
     expect: { status: 'other', topic: 'other' },
   },
+  {
+    name: 'blocklist matches the sender EMAIL address, not just display name',
+    email: {
+      subject: 'SWITZERLAND: A Muslim woman was fined for wearing a burqa',
+      from: 'Quora Digest <english-quora-digest@quora.com>',
+      body: `congratulations ... accepted into ... scholarship`,
+    },
+    expect: { status: 'other', topic: 'other' },
+  },
 ];
 
 let failed = 0;
