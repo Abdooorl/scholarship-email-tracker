@@ -3,6 +3,7 @@ dist/
 .wrangler/
 .dev.vars
 .env
+.env.gmail
 INGEST_SECRET.txt
 *.log
 .DS_Store

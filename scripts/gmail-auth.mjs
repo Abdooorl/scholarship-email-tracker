@@ -15,9 +15,14 @@
 
 import http from 'node:http';
 import crypto from 'node:crypto';
-import { exec } from 'node:child_process';
+import { exec, execSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 import process from 'node:process';
 import readline from 'node:readline/promises';
+
+function shlexQuote(value) {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
 
 const PORT = 53682;
 const REDIRECT_URI = `http://localhost:${PORT}`;
@@ -38,7 +43,7 @@ async function exchange(code, clientId, clientSecret, codeVerifier) {
     body: new URLSearchParams({
       code,
       client_id: clientId,
-      client_secret,
+      client_secret: clientSecret,
       redirect_uri: REDIRECT_URI,
       grant_type: 'authorization_code',
       code_verifier: codeVerifier,
@@ -111,12 +116,49 @@ async function main() {
     );
   }
 
+  // Verify the refresh token actually works before doing anything with it.
+  console.log('Verifying refresh token...');
+  const checkRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: tokens.refresh_token,
+      grant_type: 'refresh_token',
+    }),
+  });
+  if (!checkRes.ok) {
+    throw new Error(`Freshly issued refresh token failed verification: ${checkRes.status}\n${await checkRes.text()}`);
+  }
+  console.log('Refresh token verified OK.');
+
   const ingestSecret = crypto.randomBytes(32).toString('hex');
 
-  console.log('\n================ SUCCESS — add these to GitHub repo secrets ================\n');
+  // Save locally (gitignored) so nothing has to be copy-pasted from the terminal.
+  writeFileSync('.env.gmail', [
+    `GMAIL_CLIENT_ID=${clientId}`,
+    `GMAIL_CLIENT_SECRET=${clientSecret}`,
+    `GMAIL_REFRESH_TOKEN=${tokens.refresh_token}`,
+    `INGEST_SECRET=${ingestSecret}`,
+    '',
+  ].join('\n'), { mode: 0o600 });
+  console.log('\nSaved credentials to .env.gmail (gitignored).');
+
+  // Push the GitHub secret automatically when `gh` is available and authed.
+  try {
+    execSync('gh auth status', { stdio: 'ignore' });
+    execSync(`gh secret set GMAIL_REFRESH_TOKEN --body ${shlexQuote(tokens.refresh_token)}`, { stdio: 'inherit' });
+    console.log('Updated GitHub secret GMAIL_REFRESH_TOKEN automatically.');
+  } catch {
+    console.log('gh not available/authed — set GMAIL_REFRESH_TOKEN on GitHub manually:');
+    console.log(`GMAIL_REFRESH_TOKEN=${tokens.refresh_token}`);
+  }
+
+  console.log('\n================ SUCCESS — all values saved/referenced below ================\n');
   console.log(`GMAIL_CLIENT_ID=${clientId}`);
   console.log(`GMAIL_CLIENT_SECRET=${clientSecret}`);
-  console.log(`GMAIL_REFRESH_TOKEN=${tokens.refresh_token}`);
+  console.log(`# GMAIL_REFRESH_TOKEN: verified + stored in .env.gmail / GitHub secret`);
   console.log('');
   console.log('# Suggested value for the ingest shared secret (set on BOTH GitHub and the Worker):');
   console.log(`INGEST_SECRET=${ingestSecret}`);
